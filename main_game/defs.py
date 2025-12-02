@@ -9,7 +9,7 @@ from . import variables
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.font.init()
-my_font = pygame.font.SysFont("Arial", 20)
+my_font = pygame.font.SysFont("Cinzel regular", 20)
 img_power_bigger_bar = pygame.image.load("./images/power_up_bigger_bar.png")
 img_power_bigger_bar = pygame.transform.scale(img_power_bigger_bar, (64, 64))
 img_power_more_balls = pygame.image.load("./images/power_up_more_balls.png")
@@ -18,6 +18,10 @@ img_little_fire = pygame.image.load("./images/fueguito-player.png")
 img_little_fire = pygame.transform.scale(img_little_fire, (32, 32))
 img_little_fire_going = pygame.image.load("./images/fueguito-yendo.png")
 img_little_fire_going = pygame.transform.scale(img_little_fire_going, (32, 32))
+img_bar_normal = pygame.image.load("./images/barra_metal.png")
+img_bar_bigger = pygame.image.load("./images/barra_metal_grande.png")
+img_furnace_background = pygame.image.load("./images/horno-a-leña-fondo.png")
+img_furnace_background = pygame.transform.scale(img_furnace_background, (600, 900))
 
 rectangle_height_separation = 1
 delimitator = 10
@@ -55,8 +59,8 @@ diameter = radius * 2
 blur_surf = pygame.Surface((diameter, diameter), pygame.SRCALPHA)
 blur_surf.fill((0, 0, 0, 0))
 
-blur_rgb = (255, 255, 255)
-max_alpha = 50
+blur_rgb = (254, 186, 23)
+max_alpha = 80
 
 center = radius
 for x in range(diameter):
@@ -79,8 +83,19 @@ def mouse_blur():
     screen.blit(blur_surf, draw_pos)
 
 
+def fire_blur():
+    target = None
+    if hasattr(variables, 'balls') and variables.balls:
+        target = variables.balls[0][0]
+    else:
+        target = BALL
+
+    draw_pos = (target.x - radius, target.y - radius)
+    screen.blit(blur_surf, draw_pos)
+
+
 def bar_movement():
-    pygame.draw.rect(screen, BAR_COLOR, BAR)
+    screen.blit(img_bar_normal, BAR)
     if variables.BAR_INITIAL_POS:
         BAR.x = (SCREEN_WIDTH // 2 - bar_width // 2)
 
@@ -297,6 +312,8 @@ def update_power_ups():
             variables.BAR.x = max(0, min(variables.SCREEN_WIDTH - variables.BAR.width, centerx - variables.BAR.width // 2))
             variables.power_up_active = False
             variables.powerup_end_ticks = 0
+    if variables.power_up_active:
+        screen.blit(img_bar_bigger, BAR)
 
 
 def reset_game():
@@ -391,22 +408,30 @@ def points_popup():
     while viewing_scoreboard:
         screen.fill(BACKGROUND_COLOR)
         
-        title_font = pygame.font.SysFont("Arial", 40, bold=True)
+        title_font = pygame.font.SysFont("Cinzel regular", 40, True)
         title_surface = title_font.render("TABLA DE PUNTUACIONES", True, (255, 0, 0))
         screen.blit(title_surface, (variables.SCREEN_WIDTH // 2 - title_surface.get_width() // 2, 50))
         
         y_offset = 150
-        header_font = pygame.font.SysFont("Arial", 24, bold=True)
-        header_surface = header_font.render(f"{"Posición":<15} {"Nombre":<20} {"Puntos":<10}", True, (255, 255, 255))
-        screen.blit(header_surface, (50, y_offset))
+        header_font = pygame.font.SysFont("Cinzel regular", 24, True)
+
+        header_surface = header_font.render("posición", True, (255, 255, 255))
+        screen.blit(header_surface, ((variables.SCREEN_WIDTH // 3) - (variables.SCREEN_WIDTH // 3) + header_surface.get_width() // 2, y_offset))
+        header_surface = header_font.render("nombre", True, (255, 255, 255))
+        screen.blit(header_surface, ((variables.SCREEN_WIDTH // 3) * 2 - (variables.SCREEN_WIDTH // 3) + header_surface.get_width() // 2, y_offset))
+        header_surface = header_font.render("puntos", True, (255, 255, 255))
+        screen.blit(header_surface, ((variables.SCREEN_WIDTH // 3) * 3 - (variables.SCREEN_WIDTH // 3) + header_surface.get_width() // 2, y_offset))
         y_offset += 40
         
         sorted_users = sorted(variables.users.items(), key=lambda x: x[1], reverse=True)
         for idx, (name, points) in enumerate(sorted_users, 1):
             if idx <= 5:
-                rank_text = f"{idx:<5}      {name:<20}         {points:<10}"
-                rank_surface = my_font.render(rank_text, True, (255, 255, 255))
-                screen.blit(rank_surface, (100, y_offset))
+                rank_surface = my_font.render(str(idx), True, (255, 255, 255))
+                screen.blit(rank_surface, ((variables.SCREEN_WIDTH // 3 // 2), y_offset))
+                rank_surface = my_font.render(name, True, (255, 255, 255))
+                screen.blit(rank_surface, ((variables.SCREEN_WIDTH // 3 * 2 * 0.75) - rank_surface.get_width() // 2, y_offset))
+                rank_surface = my_font.render(str(points), True, (255, 255, 255))
+                screen.blit(rank_surface, ((variables.SCREEN_WIDTH * 0.8) - rank_surface.get_width() // 2, y_offset))
                 y_offset += 35
         
         for event in pygame.event.get():
@@ -461,6 +486,9 @@ def points_system():
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                pygame.mixer.music.load("bgm_and_sfx/BGMs/xDeviruchi - And The Journey Begins .wav")
+                pygame.mixer.music.set_volume(0.05)
+                pygame.mixer.music.play(-1)
                 return
             
             if event.type == pygame.KEYDOWN:
@@ -472,6 +500,9 @@ def points_system():
                         save_users()
                         
                         name_entered = True
+                        pygame.mixer.music.load("bgm_and_sfx/BGMs/xDeviruchi - And The Journey Begins .wav")
+                        pygame.mixer.music.set_volume(0.05)
+                        pygame.mixer.music.play(-1)
                         return
                 
                 elif event.key == pygame.K_BACKSPACE and not name_entered:

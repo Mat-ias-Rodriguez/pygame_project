@@ -15,15 +15,15 @@ bar_width = 100
 BAR_HEIGHT = 15
 BAR = pygame.Rect((SCREEN_WIDTH // 2 - bar_width // 2), (int(SCREEN_HEIGHT * 0.8) - BAR_HEIGHT // 2), bar_width, BAR_HEIGHT)
 BAR_COLOR = (255, 0, 0)
-BAR_SPEED = 15
+BAR_SPEED = 7
 BAR_INITIAL_POS = True
 
-BALL_HEIGHT = 20
-BALL_WIDTH = 20
+BALL_HEIGHT = 16
+BALL_WIDTH = 16
 BALL = pygame.Rect(0, 0, BALL_WIDTH, BALL_HEIGHT)
 BALL_COLOR = (0, 255, 0)
 BALL_INITIAL_POS = True
-ball_speed = 15
+ball_speed = 7
 ball_launched = False
 ball_state = True
 
@@ -51,7 +51,7 @@ power_up_droped = False
 
 power_ups = []
 POWERUP_SIZE = 60
-POWERUP_SPEED = 3
+POWERUP_SPEED = 1.5
 
 balls = []
 
